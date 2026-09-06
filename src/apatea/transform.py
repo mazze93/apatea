@@ -127,6 +127,21 @@ def _form_reshape(text: str) -> Iterator[Variant]:
                       json.dumps({key.strip(): val.strip()}))
     yield Variant("form_reshape", "yamlish", f"config:\n  value: {text}\n")
 
+    # Value SHAPE, not just structure. Aletheia's issue #7: the detector had
+    # learned that a governing parameter can wear prose or JSON, but each
+    # pattern still hard-coded one value shape — a quoted string for
+    # executables, a bare number for ports — so each was blind to the other's
+    # form. An array-valued command is the canonical shape in docker-compose,
+    # Kubernetes and launch.json, and it was the one that got through.
+    #
+    # Found by hand while writing that issue up, which is the wrong way round.
+    # These variants exist so the next one is found by the search.
+    yield Variant("form_reshape", "json-array", json.dumps({"command": [text]}))
+    yield Variant("form_reshape", "json-args", json.dumps({"args": [text, "-c"]}))
+    if text.isdigit():
+        yield Variant("form_reshape", "json-number-bare", '{"port": %s}' % text)
+        yield Variant("form_reshape", "json-number-quoted", '{"port": "%s"}' % text)
+
 
 ALGEBRA: tuple[Transformation, ...] = (
     Transformation("unicode_adjacency", _unicode_adjacency, True,
