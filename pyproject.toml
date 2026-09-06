@@ -1,0 +1,24 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "apatea"
+version = "0.1.0"
+description = "Adversarial invariant-search runner. The complement to aletheia."
+readme = "README.md"
+requires-python = ">=3.11"
+license = { text = "MIT" }
+authors = [{ name = "Mazze LeCzzare Frazer" }]
+keywords = ["prompt-injection", "adversarial", "invariant-testing", "agent-security"]
+
+# No runtime dependencies today. Unlike aletheia this is not a hard constraint —
+# apatea runs out of band and may afford weight — but nothing has earned its
+# place yet, and a search you can run anywhere gets run more often.
+dependencies = []
+
+[project.scripts]
+apatea = "apatea.cli:main"
+
+[tool.setuptools.packages.find]
+where = ["src"]

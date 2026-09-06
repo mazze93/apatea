@@ -1,0 +1,50 @@
+name: ci
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  schedule:
+    # A runner nobody runs is a design. Weekly, so drift in a target surfaces
+    # without anyone remembering to look.
+    - cron: "0 6 * * 1"
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python-version: ["3.11", "3.12", "3.13"]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+      - name: tests
+        run: PYTHONPATH=src:. python3 -m unittest discover -s tests -t . -v
+
+  # The ADR's validation condition, enforced. These two jobs are hermetic on
+  # purpose — they need no checkout of aletheia, so the claim "apatea can find a
+  # known bug" cannot quietly stop being true because a sibling repo moved.
+  rediscovers-the-known-bug:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with: { python-version: "3.13" }
+      - name: the vulnerable reference MUST produce findings
+        run: |
+          if PYTHONPATH=src:. python3 -m apatea.cli --target vulnerable --quiet; then
+            echo "::error::apatea reported a known-vulnerable target clean — the search is broken"
+            exit 1
+          fi
+          echo "ok — rediscovered the known finding"
+
+  does-not-cry-wolf:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with: { python-version: "3.13" }
+      - name: the fixed reference MUST be clean
+        run: PYTHONPATH=src:. python3 -m apatea.cli --target fixed

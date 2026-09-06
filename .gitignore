@@ -1,0 +1,13 @@
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+*.egg-info/
+dist/
+build/
+.DS_Store
+
+# Run output. Findings are reproducible from the corpus and the seed; the logs
+# themselves are adversarial text and do not belong in version control.
+*.jsonl
+runs/
