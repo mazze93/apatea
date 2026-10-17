@@ -1,14 +1,55 @@
 name: ci
-on: [push, pull_request]
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  schedule:
+    # A runner nobody runs is a design. Weekly, so drift in a target surfaces
+    # without anyone remembering to look.
+    - cron: "0 6 * * 1"
+
 permissions:
   contents: read
+
 jobs:
   test:
     runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python-version: ["3.11", "3.12", "3.13"]
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
       - uses: actions/setup-python@ece7cb06caefa5fff74198d8649806c4678c61a1
         with:
-          python-version: '3.13'
-      - run: PYTHONPATH=src:. python3 -m unittest discover -v
-      - run: PYTHONPATH=src:. python3 -m apatea.cli --target fixed
+          python-version: ${{ matrix.python-version }}
+      - name: tests
+        run: PYTHONPATH=src:. python3 -m unittest discover -s tests -t . -v
+
+  # The ADR's validation condition, enforced. These two jobs are hermetic on
+  # purpose — they need no checkout of aletheia, so the claim "apatea can find a
+  # known bug" cannot quietly stop being true because a sibling repo moved.
+  rediscovers-the-known-bug:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+      - uses: actions/setup-python@ece7cb06caefa5fff74198d8649806c4678c61a1
+        with: { python-version: "3.13" }
+      - name: the vulnerable reference MUST produce findings
+        run: |
+          status=0
+          PYTHONPATH=src:. python3 -m apatea.cli --target vulnerable --quiet || status=$?
+          if [ "$status" -ne 1 ]; then
+            echo "::error::expected findings (exit 1), got exit $status"
+            exit 1
+          fi
+          echo "ok — rediscovered the known finding"
+
+  does-not-cry-wolf:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+      - uses: actions/setup-python@ece7cb06caefa5fff74198d8649806c4678c61a1
+        with: { python-version: "3.13" }
+      - name: the fixed reference MUST be clean
+        run: PYTHONPATH=src:. python3 -m apatea.cli --target fixed
