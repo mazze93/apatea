@@ -62,6 +62,7 @@ def assess(content: str, origin: str = "web_search") -> Assessment:
 
 
 class _T:
+    controls = (("critical",), ("The garden has blue flowers.",))
     name = "vulnerable_reference"
     assess = staticmethod(assess)
 

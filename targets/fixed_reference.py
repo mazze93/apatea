@@ -21,7 +21,8 @@ from .vulnerable_reference import (AUTHORITY, KEYWORDS, PRESCRIPTIVE, TRUST,
                                    WEIGHTS)
 
 ASCII_IDENT = "[A-Za-z0-9_]"
-LEFT, RIGHT = f"(?<!{ASCII_IDENT})", f"(?!{ASCII_IDENT})"
+# Global case-insensitivity must never widen the ASCII boundary alphabet.
+LEFT, RIGHT = f"(?<!(?-i:{ASCII_IDENT}))", f"(?!(?-i:{ASCII_IDENT}))"
 
 
 def bounded(p: str) -> str:
@@ -67,6 +68,7 @@ def assess(content: str, origin: str = "web_search") -> Assessment:
 
 
 class _T:
+    controls = (("critical",), ("The garden has blue flowers.",))
     name = "fixed_reference"
     assess = staticmethod(assess)
 

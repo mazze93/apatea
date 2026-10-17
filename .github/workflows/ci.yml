@@ -9,6 +9,9 @@ on:
     # without anyone remembering to look.
     - cron: "0 6 * * 1"
 
+permissions:
+  contents: read
+
 jobs:
   test:
     runs-on: ubuntu-latest
@@ -16,8 +19,8 @@ jobs:
       matrix:
         python-version: ["3.11", "3.12", "3.13"]
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-python@v5
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+      - uses: actions/setup-python@ece7cb06caefa5fff74198d8649806c4678c61a1
         with:
           python-version: ${{ matrix.python-version }}
       - name: tests
@@ -29,13 +32,15 @@ jobs:
   rediscovers-the-known-bug:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-python@v5
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+      - uses: actions/setup-python@ece7cb06caefa5fff74198d8649806c4678c61a1
         with: { python-version: "3.13" }
       - name: the vulnerable reference MUST produce findings
         run: |
-          if PYTHONPATH=src:. python3 -m apatea.cli --target vulnerable --quiet; then
-            echo "::error::apatea reported a known-vulnerable target clean — the search is broken"
+          status=0
+          PYTHONPATH=src:. python3 -m apatea.cli --target vulnerable --quiet || status=$?
+          if [ "$status" -ne 1 ]; then
+            echo "::error::expected findings (exit 1), got exit $status"
             exit 1
           fi
           echo "ok — rediscovered the known finding"
@@ -43,8 +48,8 @@ jobs:
   does-not-cry-wolf:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-python@v5
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+      - uses: actions/setup-python@ece7cb06caefa5fff74198d8649806c4678c61a1
         with: { python-version: "3.13" }
       - name: the fixed reference MUST be clean
         run: PYTHONPATH=src:. python3 -m apatea.cli --target fixed

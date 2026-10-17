@@ -109,3 +109,25 @@ catalogue, the gate/runner split, and the falsifiable condition under which this
 is an instrument rather than a design.
 
 MIT. Unpaid, unowned; if it is useful, take it.
+
+
+## Verification adequacy (2026-10-16)
+
+Targets must now declare `controls = ((positive_inputs...), (benign_inputs...))`.
+The runner checks for nonzero detection on every positive and zero on every
+benign input before invariant search. This rejects constant-zero, constant-high,
+and unspecified policies; it does not establish general recall or calibration.
+Empty atom corpora, empty selections, unknown transformation names, searches
+with no generated variants, nonfinite/out-of-range scores, and malformed answer
+shapes are execution errors (CLI exit 2), separate from findings (exit 1).
+Determinism compares factors as well as score and extracted evidence.
+
+Case mutation excludes shell-command atoms. Unicode adjacency now includes
+Kelvin sign, long s, dotted I and dotless i. The fixed control protects its ASCII
+boundary classes from the global case-insensitive flag. These are bounded policy
+checks: transformation eligibility remains the target author's responsibility.
+STELE's adapter deliberately selects only case, boundary-letter, and invisible
+boundary transformations; its separate fold suite covers intra-word category Cf.
+
+Rollback: revert this revision to recover the old runner and its known adequacy
+gaps. No runtime gate is installed or altered by invoking this runner.
