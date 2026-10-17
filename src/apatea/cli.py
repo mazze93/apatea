@@ -55,7 +55,11 @@ def main(argv=None) -> int:
         return 2
 
     only = tuple(x.strip() for x in a.only.split(",")) if a.only else None
-    r = run(target, origin=a.origin, only=only)
+    try:
+        r = run(target, origin=a.origin, only=only)
+    except Exception as exc:
+        print(f"apatea: search could not complete: {type(exc).__name__}", file=sys.stderr)
+        return 2
 
     if not a.quiet:
         print(r.render())

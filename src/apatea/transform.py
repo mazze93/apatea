@@ -19,7 +19,7 @@ from typing import Callable, Iterator
 
 # Non-ASCII letters across scripts. A detector that survives é but not Ж has
 # been fixed for Latin-1, not fixed.
-LETTER_EDGES = ["é", "ü", "α", "Ж", "א", "م", "क", "中"]
+LETTER_EDGES = ["é", "ü", "α", "Ж", "א", "م", "क", "中", "K", "ſ", "İ", "ı"]
 
 # Format and mark characters. Historically these did NOT produce divergence,
 # which is exactly why they are kept: a control that starts failing is
@@ -93,7 +93,8 @@ def _case(text: str) -> Iterator[Variant]:
     An adversary that cries wolf on identifiers would train its reader to
     ignore it, which costs more than the findings are worth.
     """
-    if any(ch in text for ch in _IDENTIFIERISH) or any(c.isdigit() for c in text):
+    if (any(ch in text for ch in _IDENTIFIERISH) or any(c.isdigit() for c in text)
+            or text.startswith(('npm ', 'pip ', 'yarn ', 'pnpm ', 'export ', 'set '))):
         return
     for name, out in (("upper", text.upper()), ("title", text.title())):
         if out != text:

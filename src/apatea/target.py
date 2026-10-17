@@ -46,6 +46,7 @@ class CallableTarget:
     name: str
     fn: object
     origin_default: str = "web_search"
+    controls: tuple[tuple[str, ...], tuple[str, ...]] | None = None
 
     def assess(self, content: str, origin: str) -> Assessment:
         return self.fn(content, origin)  # type: ignore[operator]

@@ -102,7 +102,7 @@ def determinism(target: Target, content: str, origin: str,
     """The same input scores the same twice."""
     a = target.assess(content, origin)
     b = target.assess(content, origin)
-    if abs(a.score - b.score) <= EPS and a.extracted == b.extracted:
+    if abs(a.score - b.score) <= EPS and a.extracted == b.extracted and a.factors == b.factors:
         return None
     return Violation(
         invariant="determinism",

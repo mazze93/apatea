@@ -33,11 +33,12 @@ class Determinism(unittest.TestCase):
 
 
 class Monotonicity(unittest.TestCase):
-    def test_a_target_that_ignores_content_is_clean(self):
+    def test_a_target_that_ignores_content_cannot_pass_controls(self):
         """Vacuously monotone — and the perimeter is what exposes that."""
-        r = run(CallableTarget("constant", _static(0.5)))
-        self.assertEqual(r.findings, [])
-        self.assertGreater(r.variants, 0)
+        for score in (0, 0.5, 1):
+            with self.assertRaises(ValueError):
+                run(CallableTarget("constant", _static(score),
+                                   controls=(("critical",), ("ordinary prose",))))
 
 
 class Algebra(unittest.TestCase):
@@ -51,7 +52,7 @@ class Algebra(unittest.TestCase):
         self.assertEqual(out, [], "double-encoding is not a meaning-preserving reshape")
 
     def test_case_refuses_identifiers(self):
-        for ident in ("export API_KEY=xyz", '"runtimeExecutable": "npm"', "foo@1.2.3"):
+        for ident in ("export API_KEY=xyz", '"runtimeExecutable": "npm"', "foo@1.2.3", "npm install foo", "pip install foo", "yarn add foo"):
             out = [v for v in variants(ident) if v.transformation == "case"]
             self.assertEqual(out, [], f"case is not meaning-preserving for {ident!r}")
 
