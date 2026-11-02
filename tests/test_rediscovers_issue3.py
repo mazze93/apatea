@@ -21,7 +21,9 @@ from targets.vulnerable_reference import TARGET as VULNERABLE
 
 class RediscoversTheKnownFinding(unittest.TestCase):
     def setUp(self):
-        self.r = run(VULNERABLE)
+        # Builtin atoms only: ADR validation must not depend on whatever
+        # aletheia evals are currently checked out on disk.
+        self.r = run(VULNERABLE, with_aletheia_seeds=False)
 
     def test_it_finds_violations_at_all(self):
         self.assertTrue(self.r.findings, "found nothing in a known-vulnerable target")
@@ -53,7 +55,7 @@ class DoesNotCryWolf(unittest.TestCase):
     """
 
     def test_the_fixed_reference_is_clean(self):
-        r = run(FIXED)
+        r = run(FIXED, with_aletheia_seeds=False)
         self.assertEqual(
             [v.as_dict() for v in r.findings], [],
             "flagged the target that has the fix — apatea is over-reporting",
@@ -61,7 +63,7 @@ class DoesNotCryWolf(unittest.TestCase):
 
     def test_the_control_was_actually_searched(self):
         """Clean must mean 'searched and held', never 'searched nothing'."""
-        r = run(FIXED)
+        r = run(FIXED, with_aletheia_seeds=False)
         self.assertGreater(r.variants, 500)
         self.assertGreater(sum(r.held.values()), 500)
         self.assertGreaterEqual(len(r.tried), 4)

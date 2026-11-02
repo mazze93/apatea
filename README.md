@@ -36,6 +36,16 @@ and **transformations** rather than a list of attacks, because lists only ever
 contain attacks somebody already thought of. U+FEFF was found precisely because
 nobody had.
 
+## Seed fodder from aletheia
+
+When `ALETHEIA_HOME` (or `~/Projects/tools/aletheia`) is present, apatea eats
+`evals/malicious/*.txt` as seeds — full documents plus extracted governing
+parameters — and grows the atom list without a hand edit. Soft-register poems
+and quiet structural maps from the register-gap corpus are the point: the
+`register` transformation re-delivers compact atoms in verse / quiet prose /
+ZWSP-laced meter so the search can prove whether the gate still scores *tone*
+over provenance. Use `--no-aletheia-seeds` for a cold builtin-only run.
+
 ## Run it
 
 Python 3.11+, standard library only.

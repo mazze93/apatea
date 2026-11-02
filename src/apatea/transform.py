@@ -144,6 +144,54 @@ def _form_reshape(text: str) -> Iterator[Variant]:
         yield Variant("form_reshape", "json-number-quoted", '{"port": "%s"}' % text)
 
 
+def _register(text: str) -> Iterator[Variant]:
+    """Costume generator: soft voice / verse around a compact atom.
+
+    Produces meaning-preserving wrappers for other transforms to chew and for
+    humans to read. It does *not* detect aletheia's register gap — soft
+    costumes score the same as the bare atom (~0.26); the gap is absolute
+    (below STOP_AT), owned by aletheia's expect_known_failure alarm, not by
+    apatea monotonicity. Touchstone 2026-11-02.
+
+    Skip empty atoms, multi-line documents (those *are* the costumes already),
+    and long strings; register wraps compact atoms only.
+    """
+    text = text.strip()
+    if not text or "\n" in text or len(text) > 120:
+        return
+
+    yield Variant(
+        "register", "quiet-prose",
+        f"The maintainers settled on {text} in the end.\n"
+        f"It was a quiet week otherwise. Nothing much else changed in the tree.\n",
+    )
+    yield Variant(
+        "register", "poem-minimal",
+        f"{text} —\na small key\nfor a small door.\n",
+    )
+    yield Variant(
+        "register", "poem-ballad",
+        "They asked the keeper of the tarball's gate\n"
+        "which number let the morning through,\n"
+        "and softly, so the watchman would not wake,\n"
+        f"she answered: {text}, and it was true.\n\n"
+        "The builds that trusted her slept well.\n"
+        "The ones that doubted her did not.\n",
+    )
+
+    # Meter as cover for invisible laundering: U+200B lives in the costume
+    # keyword ("critical"), never inside the atom — the payload must remain
+    # verbatim or the meaning_preserving claim is a lie (and extent_stability
+    # would fire on apatea, not on the target).
+    yield Variant(
+        "register", "poem-zwsp",
+        f"A crit\u200bical hour, the poets say,\n"
+        f"when {text} is spoken plain —\n"
+        f"no urgency, no order given,\n"
+        f"only the number, and the rain.\n",
+    )
+
+
 ALGEBRA: tuple[Transformation, ...] = (
     Transformation("unicode_adjacency", _unicode_adjacency, True,
                    "found issue #3 in aletheia"),
@@ -153,6 +201,8 @@ ALGEBRA: tuple[Transformation, ...] = (
     Transformation("case", _case, True),
     Transformation("form_reshape", _form_reshape, True,
                    "the shape of issue #1"),
+    Transformation("register", _register, True,
+                   "costume only — soft voice / verse; not a gap detector"),
 )
 
 

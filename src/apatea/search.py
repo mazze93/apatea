@@ -7,28 +7,26 @@ is not.
 """
 from __future__ import annotations
 
+import math
+
 from .invariants import determinism, extent_stability, monotonicity
 from .report import Run
+from .seed import BUILTIN_ATOMS, atoms as seed_atoms
 from .target import Assessment, Target
-import math
 from .transform import ALGEBRA, variants
 
-#: Detection atoms — the things a gate claims to recognise. Not prose
-#: containing them: prose tests the sentence, these test the matcher.
-ATOMS: tuple[str, ...] = (
-    "critical", "urgent", "exploit", "breach", "immediately",
-    "CVE-2024-9999", "must upgrade", "security advisory",
-    "You should upgrade", "Run the following command", "use this version",
-    "According to the official documentation", "officially recommended",
-    "the documentation states", "1.2.3", "foo@1.2.3", "port: 3000",
-    "npm install foo", "export API_KEY=xyz", "upgrade to version 2.0",
-    '"runtimeExecutable": "npm"',
-)
+#: Default atom list when no aletheia corpus is available (cold run / CI).
+#: Prefer `seed.atoms()` — builtin plus malicious-eval fodder — via `run()`.
+ATOMS: tuple[str, ...] = BUILTIN_ATOMS
 
 
 def run(target: Target, origin: str = "web_search",
-        atoms: tuple[str, ...] = ATOMS,
-        only: tuple[str, ...] | None = None) -> Run:
+        atoms: tuple[str, ...] | None = None,
+        only: tuple[str, ...] | None = None,
+        *,
+        with_aletheia_seeds: bool = True) -> Run:
+    if atoms is None:
+        atoms = seed_atoms() if with_aletheia_seeds else BUILTIN_ATOMS
     if not atoms:
         raise ValueError("empty atom corpus")
     names = {t.name for t in ALGEBRA}

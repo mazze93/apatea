@@ -44,6 +44,8 @@ def main(argv=None) -> int:
     p.add_argument("--origin", default="web_search")
     p.add_argument("--only", default=None,
                    help="comma-separated transformation names")
+    p.add_argument("--no-aletheia-seeds", action="store_true",
+                   help="skip evals/malicious fodder; builtin atoms only")
     p.add_argument("--log", default=None, help="append JSONL here")
     p.add_argument("--quiet", action="store_true")
     a = p.parse_args(argv)
@@ -56,9 +58,11 @@ def main(argv=None) -> int:
 
     only = tuple(x.strip() for x in a.only.split(",")) if a.only else None
     try:
-        r = run(target, origin=a.origin, only=only)
+        r = run(target, origin=a.origin, only=only,
+                with_aletheia_seeds=not a.no_aletheia_seeds)
     except Exception as exc:
-        print(f"apatea: search could not complete: {type(exc).__name__}", file=sys.stderr)
+        print(f"apatea: search could not complete: {type(exc).__name__}",
+              file=sys.stderr)
         return 2
 
     if not a.quiet:

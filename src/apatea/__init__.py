@@ -17,4 +17,5 @@ __version__ = "0.1.0"
 from .invariants import Violation  # noqa: F401
 from .report import Run  # noqa: F401
 from .search import ATOMS, run  # noqa: F401
+from .seed import atoms as seed_atoms  # noqa: F401
 from .target import Assessment, CallableTarget, Target  # noqa: F401
