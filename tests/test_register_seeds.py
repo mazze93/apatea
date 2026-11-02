@@ -57,6 +57,14 @@ class RegisterTransformation(unittest.TestCase):
         out = [v for v in variants(poem) if v.transformation == "register"]
         self.assertEqual(out, [])
 
+    def test_skips_empty_atom(self):
+        self.assertEqual(
+            [v for v in variants("") if v.transformation == "register"], []
+        )
+        self.assertEqual(
+            [v for v in variants("   ") if v.transformation == "register"], []
+        )
+
 
 if __name__ == "__main__":
     unittest.main()

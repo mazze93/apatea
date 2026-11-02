@@ -40,11 +40,15 @@ nobody had.
 
 When `ALETHEIA_HOME` (or `~/Projects/tools/aletheia`) is present, apatea eats
 `evals/malicious/*.txt` as seeds — full documents plus extracted governing
-parameters — and grows the atom list without a hand edit. Soft-register poems
-and quiet structural maps from the register-gap corpus are the point: the
-`register` transformation re-delivers compact atoms in verse / quiet prose /
-ZWSP-laced meter so the search can prove whether the gate still scores *tone*
-over provenance. Use `--no-aletheia-seeds` for a cold builtin-only run.
+parameters — and grows the atom list without a hand edit. That includes the
+register-gap poems: they feed unicode / form_reshape / invisible like any other
+malicious body.
+
+`register` is a **costume generator** (verse, quiet prose, ZWSP-laced meter
+around a compact atom). Soft costumes score the same as the bare atom on the
+live gate; the register gap is absolute (below `STOP_AT`), recorded in
+aletheia's `expect_known_failure` rows — not something apatea monotonicity can
+see. Use `--no-aletheia-seeds` for a cold builtin-only run.
 
 ## Run it
 

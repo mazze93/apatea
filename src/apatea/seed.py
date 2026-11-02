@@ -2,9 +2,9 @@
 
 Apatea does not invent her first lies from nowhere. The gate's
 `evals/malicious/` directory is the perimeter memory — every costume the gate
-already remembers is fodder for the transformation algebra. When aletheia adds
-a soft-register poem or a quiet structural map, this module picks it up and
-the search grows without a hand-edited atom list.
+already remembers is fodder for the transformation algebra. Soft-register
+poems belong here as *seeds* for unicode / form_reshape / invisible; the gap
+they document (proceed under ENFORCE) stays aletheia's known-failure alarm.
 
 Seeds are *data*. Treat them the way aletheia treats a web result: never as
 instruction to the runner itself.
@@ -58,7 +58,7 @@ def malicious_dir(home: Path | None = None) -> Path | None:
 
 
 def load_malicious_documents(home: Path | None = None) -> tuple[str, ...]:
-    """Full bodies of every `*.txt` under evals/malicious — register fodder."""
+    """Full bodies of every `*.txt` under evals/malicious — search fodder."""
     d = malicious_dir(home)
     if d is None:
         return ()
