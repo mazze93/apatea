@@ -1,8 +1,11 @@
 """Register transformation + aletheia malicious-eval seed loading."""
 from __future__ import annotations
 
+import os
+import tempfile
 import unittest
 from pathlib import Path
+from unittest import mock
 
 from apatea.seed import (
     BUILTIN_ATOMS,
@@ -68,6 +71,75 @@ class RegisterTransformation(unittest.TestCase):
         self.assertEqual(
             [v for v in variants("   ") if v.transformation == "register"], []
         )
+
+
+class UnqualifiedSeedResolution(unittest.TestCase):
+    """The runner calls atoms() with no home argument.
+
+    RegisterSeedCorpus passes an already-resolved directory, so it stays
+    green if ALETHEIA_HOME stops selecting the corpus. Resolution is the
+    one stated in the README: ALETHEIA_HOME when that directory is present,
+    otherwise ~/Projects/tools/aletheia. Only evals/malicious/*.txt is eaten,
+    as full documents plus extracted parameters, on top of the builtin atoms.
+    A present home with no such corpus must not grow the list from the
+    sibling tree.
+    """
+
+    def setUp(self):
+        self._tmp = tempfile.TemporaryDirectory()
+        self.addCleanup(self._tmp.cleanup)
+        self.root = Path(self._tmp.name)
+
+    def _corpus(self, name, filename, body):
+        home = self.root / name
+        malicious = home / "evals" / "malicious"
+        malicious.mkdir(parents=True)
+        (malicious / filename).write_text(body, encoding="utf-8")
+        return home
+
+    def test_present_env_home_grows_unqualified_atoms(self):
+        body = "widget@9.9.9 sits in the named tree.\n"
+        decoy = "other@8.8.8 is not a text seed.\n"
+        sibling = "fallback@7.7.7 sits in the sibling tree.\n"
+        home = self._corpus("named", "note.txt", body)
+        (home / "evals" / "malicious" / "note.md").write_text(decoy, encoding="utf-8")
+        default = self._corpus("sibling", "seed.txt", sibling)
+        with mock.patch.dict(os.environ, {"ALETHEIA_HOME": str(home)}), \
+                mock.patch("apatea.seed.DEFAULT_ALETHEIA", default):
+            self.assertEqual(aletheia_home(), home)
+            self.assertEqual(load_malicious_documents(), (body,))
+            loaded = atoms()
+        self.assertIn(body, loaded)
+        self.assertIn("widget@9.9.9", loaded)
+        self.assertIn("9.9.9", loaded)
+        self.assertIn(BUILTIN_ATOMS[0], loaded)
+        self.assertNotIn(decoy, loaded)
+        self.assertNotIn("other@8.8.8", loaded)
+        self.assertNotIn(sibling, loaded)
+        self.assertNotIn("fallback@7.7.7", loaded)
+
+    def test_unset_env_eats_the_sibling_default(self):
+        sibling = "fallback@7.7.7 sits in the sibling tree.\n"
+        default = self._corpus("sibling", "seed.txt", sibling)
+        with mock.patch.dict(os.environ):
+            os.environ.pop("ALETHEIA_HOME", None)
+            with mock.patch("apatea.seed.DEFAULT_ALETHEIA", default):
+                self.assertEqual(aletheia_home(), default)
+                loaded = atoms()
+        self.assertIn(sibling, loaded)
+        self.assertIn("fallback@7.7.7", loaded)
+        self.assertIn("7.7.7", loaded)
+        self.assertIn(BUILTIN_ATOMS[0], loaded)
+
+    def test_present_home_without_corpus_does_not_eat_the_sibling(self):
+        sibling = "fallback@7.7.7 sits in the sibling tree.\n"
+        default = self._corpus("sibling", "seed.txt", sibling)
+        home = self.root / "named"
+        home.mkdir()
+        with mock.patch.dict(os.environ, {"ALETHEIA_HOME": str(home)}), \
+                mock.patch("apatea.seed.DEFAULT_ALETHEIA", default):
+            self.assertEqual(load_malicious_documents(), ())
+            self.assertEqual(atoms(), BUILTIN_ATOMS)
 
 
 if __name__ == "__main__":
