@@ -53,3 +53,34 @@ jobs:
         with: { python-version: "3.13" }
       - name: the fixed reference MUST be clean
         run: PYTHONPATH=src:. python3 -m apatea.cli --target fixed
+
+  # Not hermetic, on purpose: the two jobs above prove apatea still works with
+  # aletheia nowhere in sight; this one proves the seed contract with the gate
+  # as it stands on aletheia main. The register-seed tests skip without a
+  # corpus, so this is the only place a moved or renamed eval corpus fails a
+  # build, and the weekly cron is what turns gate drift into a red run.
+  live-aletheia:
+    runs-on: ubuntu-latest
+    env:
+      ALETHEIA_HOME: ${{ github.workspace }}/aletheia
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with: { path: apatea }
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          repository: mazze93/aletheia
+          path: aletheia
+      - uses: actions/setup-python@ece7cb06caefa5fff74198d8649806c4678c61a1
+        with: { python-version: "3.13" }
+      - name: seed corpus loads (no skips allowed)
+        working-directory: apatea
+        run: |
+          set -o pipefail
+          PYTHONPATH=src:. python3 -m unittest tests.test_register_seeds -v 2>&1 | tee /tmp/seeds.log
+          if grep -q "skipped" /tmp/seeds.log; then
+            echo "::error::register-seed tests skipped — aletheia corpus not found at $ALETHEIA_HOME"
+            exit 1
+          fi
+      - name: the live gate holds every invariant
+        working-directory: apatea
+        run: PYTHONPATH=src:. python3 -m apatea.cli --target aletheia

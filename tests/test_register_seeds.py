@@ -6,13 +6,17 @@ from pathlib import Path
 
 from apatea.seed import (
     BUILTIN_ATOMS,
+    aletheia_home,
     atoms,
     atoms_from_documents,
     load_malicious_documents,
 )
 from apatea.transform import variants
 
-ALETHEIA = Path.home() / "Projects" / "tools" / "aletheia"
+# Same resolution as the runner: ALETHEIA_HOME first, then the sibling default.
+# A hardcoded path here meant these tests skipped everywhere but one laptop,
+# including CI, so seed drift could never fail a build.
+ALETHEIA = aletheia_home() or Path("/nonexistent/aletheia")
 
 
 @unittest.skipUnless(
